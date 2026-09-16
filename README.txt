@@ -1,19 +1,20 @@
-IXADCC v2
+IXADCC V3
 
 Features:
-- Live caller/operator audio
-- REAL browser ringtone on incoming calls (armed when operator clicks GO ONLINE)
-- Optional desktop notification when permission is granted
-- Announcements published by the boss/operator and shown on caller page
-- Mute, hold/resume, speaker, keypad logging, recording control, notes, departments
-- One active caller at a time
+- Multiple operators can be online at the same time.
+- Incoming calls ring all online operators.
+- First operator to answer gets the caller.
+- Transfer button lets an operator choose another online teammate.
+- Receiving operator gets an Accept/Decline transfer alert.
+- Caller reconnects to the receiving operator after transfer.
+- Announcements, ringtone, hold, mute, speaker, keypad, recording control, departments, notes and activity log retained.
 
-Start locally:
-1. npm install
-2. npm start
-3. Open http://localhost:3000/operator.html and /caller.html
+Run locally:
+npm install
+npm start
+Caller: http://localhost:8080/caller.html
+Operator: http://localhost:8080/operator.html
 
-Deployment:
-Use Node web service with Build Command: npm install
-Start Command: npm start
-The server listens on process.env.PORT and 0.0.0.0.
+Railway:
+Start command: npm start
+The server listens on process.env.PORT (fallback 8080).

@@ -1,10 +1,3 @@
-Render settings for IXADCC v2:
-Language: Node
-Branch: main
-Root Directory: blank
-Build Command: npm install
-Start Command: npm start
-Compute: Free
-No environment variables are required.
-
-If a payment card is requested, cancel; do not enter card details.
+For Railway or Render, deploy this folder as a Node web service.
+Start command: npm start
+No custom port is required; the app uses process.env.PORT.
