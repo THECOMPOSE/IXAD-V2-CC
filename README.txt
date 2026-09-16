@@ -1,20 +1,13 @@
-IXADCC V3
+IXADCC V5 — BOSS + OPERATOR PANELS
 
-Features:
-- Multiple operators can be online at the same time.
-- Incoming calls ring all online operators.
-- First operator to answer gets the caller.
-- Transfer button lets an operator choose another online teammate.
-- Receiving operator gets an Accept/Decline transfer alert.
-- Caller reconnects to the receiving operator after transfer.
-- Announcements, ringtone, hold, mute, speaker, keypad, recording control, departments, notes and activity log retained.
+Boss:
+  /boss.html
 
-Run locally:
-npm install
-npm start
-Caller: http://localhost:8080/caller.html
-Operator: http://localhost:8080/operator.html
+Operators:
+  /operator.html
 
-Railway:
-Start command: npm start
-The server listens on process.env.PORT (fallback 8080).
+Caller:
+  /caller.html
+
+The Boss panel is for the Boss account and contains team/ban/announcement controls.
+Operator panel is for regular team members and does not display Boss controls.

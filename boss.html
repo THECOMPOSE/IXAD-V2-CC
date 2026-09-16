@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IXADCC Boss Panel</title><link rel="stylesheet" href="/style.css"></head><body><div class="wrap">
+<header><div><div class="brand">IXADCC 👑</div><div class="muted">Boss Administration Panel</div></div><div class="status"><span id="dot" class="dot"></span><b id="status">OFFLINE</b></div></header>
+<div class="card"><h2>👑 Boss Login</h2><p class="muted">This panel is for the Boss only.</p><input id="bossName" value="Boss" placeholder="Boss name"><button id="online" class="green wide">🟢 GO ONLINE</button><button id="offline" class="wide">🔴 GO OFFLINE</button><p id="state" class="muted">Click GO ONLINE to enter the Boss dashboard.</p></div>
+<div class="grid">
+<section class="card"><h2>👥 Team</h2><div id="team" class="ann-list"><p class="muted">No operators online.</p></div></section>
+<section class="card"><h2>🚫 Ban / Unban</h2><input id="banName" placeholder="Operator name"><div class="grid"><button id="banBtn" class="red">🚫 BAN</button><button id="unbanBtn">🔓 UNBAN</button></div><p id="banStatus" class="muted"></p></section>
+</div>
+<div class="card"><h2>📞 Call Monitor</h2><p id="callState" class="muted">No active call.</p></div>
+<div class="card"><h2>📢 Announcements</h2><input id="annTitle" placeholder="Announcement title"><textarea id="annMessage" rows="3" placeholder="Announcement message"></textarea><button id="publishAnn" class="green wide">📢 PUBLISH TO IXADCC</button><div id="annList" class="ann-list"></div></div>
+<div class="card"><h2>📋 Boss Activity</h2><div id="log" class="log"></div></div>
+</div>
+<script src="/socket.io/socket.io.js"></script><script>
+const socket=io();const $=id=>document.getElementById(id);let online=false;
+function log(t){$('log').innerHTML+='<div>'+new Date().toLocaleTimeString()+' — '+t+'</div>'}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderTeam(list){$('team').innerHTML=list.length?list.map(x=>'<div class="announcement"><b>🟢 '+esc(x.name)+'</b><span>Online</span></div>').join(''):'<p class="muted">No operators online.</p>'}
+socket.on('operators',renderTeam);
+socket.on('operator-status',x=>{$('dot').className='dot '+(x.online?'on':'');$('status').textContent=x.online?'ONLINE':'OFFLINE';$('callState').textContent=x.online?'Team online: '+x.count:'No operators online.'});
+socket.on('ban-result',x=>{$('banStatus').textContent=(x.action==='banned'?'🚫 Banned ':'🔓 Unbanned ')+x.name;log($('banStatus').textContent)});
+socket.on('ban-error',x=>alert(x.message||'Action failed.'));
+socket.on('announcements',renderAnnouncements);
+function renderAnnouncements(items){$('annList').innerHTML=items.length?items.map(a=>'<div class="announcement"><b>'+esc(a.title)+'</b><span>'+esc(a.message)+'</span></div>').join(''):'<p class="muted">No announcements yet.</p>'}
+$('online').onclick=()=>{const n=$('bossName').value.trim()||'Boss';if(n.toLowerCase()!=='boss')return alert('Boss panel requires the name Boss.');socket.emit('operator-online',{name:'Boss'});online=true;$('state').textContent='👑 Boss dashboard active.';log('Boss ONLINE')};
+$('offline').onclick=()=>{socket.emit('operator-offline');online=false;$('state').textContent='Boss offline.';log('Boss OFFLINE')};
+$('banBtn').onclick=()=>{if(!online)return alert('Go online first.');const n=$('banName').value.trim();if(n)socket.emit('ban-operator',{name:n})};
+$('unbanBtn').onclick=()=>{if(!online)return alert('Go online first.');const n=$('banName').value.trim();if(n)socket.emit('unban-operator',{name:n})};
+$('publishAnn').onclick=()=>{if(!online)return alert('Go online first.');const title=$('annTitle').value.trim(),message=$('annMessage').value.trim();if(!title||!message)return alert('Enter a title and message first.');socket.emit('publish-announcement',{title,message});$('annTitle').value='';$('annMessage').value='';log('Announcement published')};
+socket.emit('get-announcements');
+</script></body></html>

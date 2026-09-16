@@ -7,6 +7,7 @@ const io=new Server(server,{cors:{origin:'*'}});
 app.use(express.static(__dirname));
 
 const operators=new Map(); // socket id -> {name}
+const bannedNames=new Set();
 let activeCall=null; // {caller, operator, transferFrom:null}
 let announcements=[{id:1,title:'Welcome to IXADCC',message:'Welcome! IXADCC is online and ready for calls.',time:new Date().toISOString()}];
 
@@ -28,11 +29,27 @@ io.on('connection',socket=>{
 
   socket.on('operator-online',payload=>{
     const name=String(payload?.name||'Operator').trim().slice(0,40)||'Operator';
+    if(bannedNames.has(name.toLowerCase())){ socket.emit('operator-banned'); return; }
     operators.set(socket.id,{name});
     socket.emit('operator-online-ok',{id:socket.id,name});
     broadcastOperators();
   });
 
+  socket.on('ban-operator',({name})=>{
+    const me=operators.get(socket.id);
+    if(!me || me.name.toLowerCase()!=='boss') return socket.emit('ban-error',{message:'Only the Boss operator can ban someone.'});
+    const target=String(name||'').trim().slice(0,40);
+    if(!target || target.toLowerCase()==='boss') return socket.emit('ban-error',{message:'Enter another operator name.'});
+    bannedNames.add(target.toLowerCase());
+    for(const [id,v] of operators){ if(v.name.toLowerCase()===target.toLowerCase()){ io.to(id).emit('banned'); operators.delete(id); }}
+    broadcastOperators(); socket.emit('ban-result',{name:target,action:'banned'});
+  });
+  socket.on('unban-operator',({name})=>{
+    const me=operators.get(socket.id);
+    if(!me || me.name.toLowerCase()!=='boss') return socket.emit('ban-error',{message:'Only the Boss operator can unban someone.'});
+    const target=String(name||'').trim().slice(0,40);
+    bannedNames.delete(target.toLowerCase()); socket.emit('ban-result',{name:target,action:'unbanned'});
+  });
   socket.on('operator-offline',()=>{
     operators.delete(socket.id);
     if(activeCall && activeCall.operator===socket.id) endActiveCall('ended');
@@ -126,7 +143,7 @@ io.on('connection',socket=>{
   });
 });
 
-app.get('/health',(req,res)=>res.json({ok:true,service:'IXADCC V3',operators:operators.size,activeCall:!!activeCall}));
+app.get('/health',(req,res)=>res.json({ok:true,service:'IXADCC V4',operators:operators.size,activeCall:!!activeCall}));
 app.get('/',(req,res)=>res.sendFile(__dirname+'/caller.html'));
 const PORT=process.env.PORT||8080;
 server.listen(PORT,'0.0.0.0',()=>console.log(`IXADCC V3 running on ${PORT}`));
