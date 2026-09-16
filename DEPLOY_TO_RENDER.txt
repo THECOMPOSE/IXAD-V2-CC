@@ -1,0 +1,10 @@
+Render settings for IXADCC v2:
+Language: Node
+Branch: main
+Root Directory: blank
+Build Command: npm install
+Start Command: npm start
+Compute: Free
+No environment variables are required.
+
+If a payment card is requested, cancel; do not enter card details.
